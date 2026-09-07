@@ -1,0 +1,44 @@
+name: AI Development Documentation
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  document-change:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements-ai-docs.txt
+
+      - name: Analyze change and write Notion log
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          OPENAI_MODEL: gpt-5.6-luna
+
+          # aiagent_study 프로젝트용 Notion 연결 정보
+          NOTION_PROJECT_PAGE_ID: 3d4a6ade-0b22-8165-b191-cb9dc66812fc
+          NOTION_DEV_LOGS_DATA_SOURCE_ID: 86b1a86c-4e52-461b-b22b-b49d9a163ea9
+
+          BEFORE_SHA: ${{ github.event.before }}
+          AFTER_SHA: ${{ github.sha }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+        run: python automation/change_analyzer.py
